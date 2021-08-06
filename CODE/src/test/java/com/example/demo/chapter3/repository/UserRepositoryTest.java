@@ -1,19 +1,14 @@
-package com.example.demo.repository;
+package com.example.demo.chapter3.repository;
 
-import com.example.demo.entity.User;
+import com.example.demo.chapter3.entity.User;
+import com.example.demo.chapter3.repository.UserRepository;
 import javassist.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.h2.mvstore.tx.Transaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
