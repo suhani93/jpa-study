@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -72,33 +73,38 @@ class UserRepositoryTest {
     }
 
 
+
     @Test
     @DisplayName("영속성 컨텍스트 1차 캐시 - 트랜잭션이 다른 경우 - 1차 캐시 사용 불가")
     void test3() throws Exception{
 
-
-
-        EntityTransaction transaction = entityManagerFactory.createEntityManager().getTransaction();
-        transaction.begin();
         User user = User.builder().nickname("유저 1").build();
-        userRepository.save(user);      // 실 구현 객체의 메소드에 트랜잭션처리 되어 있음 - 트랜잭션 1
+//        userRepository.save(user);
+        //DataJpaTest 안에 @transactional 이 있어서 메소드르 빼서 propagation을  REQUIRES_NEW 로 줌
 
-        transaction.commit();
+        save(user);      // 실 구현 객체의 메소드에 트랜잭션처리 되어 있음 - 트랜잭션 1
 
-
-        EntityTransaction transaction2 = entityManagerFactory.createEntityManager().getTransaction();
-        transaction2.begin();
-        //select 문이 나감
+        //select 문이 나가야 함
         // 트랜잭션 처리가 없기에 그냥 다른 트랜잭선임 - 트랜잭션 2
-        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new NotFoundException("not found Exception"));
-        transaction2.commit();
-
-        // 근데 왜?? 영속성 컨테이너에서 가져와??
+//        User findUser = userRepository.findById(user.getId()).orElseThrow(() -> new NotFoundException("not found Exception"));
+        User findUser = find(user.getId());
 
         //다른 객체라고 나옴
         log.info("{} - {}",user.hashCode(), findUser.hashCode());
+        //근데 왜 영속성 컨텍스트 안에서 동작 하지?? select 문이 안나가;;;
         assertThat(user, is(not(equalTo(findUser))));
 
+
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    void save(User user){
+        userRepository.save(user);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    User find(Long id) throws NotFoundException {
+        return userRepository.findById(id).orElseThrow(() -> new NotFoundException("not found Exception"));
     }
 
 
